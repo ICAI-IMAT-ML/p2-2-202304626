@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 sns.set_theme()
 import numpy as np  
 import seaborn as sns
-
+from scipy.stats import mode
 
 def minkowski_distance(a, b, p=2):
     """
@@ -19,7 +19,8 @@ def minkowski_distance(a, b, p=2):
         float: Minkowski distance between arrays a and b.
     """
 
-    # TODO
+    # Devolvemos la distancia de minkowski en formato float
+    return float((np.sum([(abs(a-b))**p]))**(1/p))
 
 
 # k-Nearest Neighbors Model
@@ -50,7 +51,21 @@ class knn:
             k (int, optional): Number of neighbors to use. Defaults to 5.
             p (int, optional): The degree of the Minkowski distance. Defaults to 2.
         """
-        # TODO
+        # Comprobamos que los tipos de datos coinciden con las especificaciones necesarias
+        if isinstance(k,int) and k>0 and isinstance(p,int) and p>0:
+            self.k = k
+            self.p = p
+        else:
+            # Raiseamos un error en caso de que no se cumpla el formato necesario
+            raise ValueError("k and p must be positive integers.")
+
+        if len(X_train) == len(y_train):
+            self.x_train = X_train
+            self.y_train = y_train
+        else:
+            # Raiseamos un error en caso de que no se cumpla el formato necesario
+            raise ValueError("Length of X_train and y_train must be equal.")
+
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -62,7 +77,10 @@ class knn:
         Returns:
             np.ndarray: Predicted class labels.
         """
-        # TODO
+        distancias = self.compute_distances(point=X)
+        indices_vecinos = self.get_k_nearest_neighbors(distances=distancias)
+        predicc = np.array([self.most_common_label(self.y_train[indices_vecinos])])
+        return predicc
 
     def predict_proba(self, X):
         """
@@ -88,7 +106,8 @@ class knn:
         Returns:
             np.ndarray: distance from point to each point in the training dataset.
         """
-        # TODO
+        # Computamos la distancia entre cada uno de los puntos de x_train (metido en un np.array) con respecto al np.array de point
+        return np.array([minkowski_distance(point,x) for x in self.x_train])
 
     def get_k_nearest_neighbors(self, distances: np.ndarray) -> np.ndarray:
         """Get the k nearest neighbors indices given the distances matrix from a point.
@@ -102,7 +121,9 @@ class knn:
         Hint:
             You might want to check the np.argsort function.
         """
-        # TODO
+        # Utilizamos el método np.argsort, que devuelve los índices de la matriz (por filas), que la ordenaría en orden ascendente
+        return np.argsort(distances)[:self.k]  # A continuación, cogemos los k primeros índices de ese np.array de índices
+        # Al poner [:self.k] con numpy significa que se incluye el índice self.k, y además los índices de arrays comienzan en 1, no en cero
 
     def most_common_label(self, knn_labels: np.ndarray) -> int:
         """Obtain the most common label from the labels of the k nearest neighbors
@@ -113,7 +134,11 @@ class knn:
         Returns:
             int: most common label
         """
-        # TODO
+        # La función mode de scipy.stats no devuelve la moda de un np.array, y también la frecuencia con la que se repite ese valor
+        moda, frecuencia = mode(knn_labels)
+
+        # Devolvemos solo el valor que representa la moda, como un entero
+        return int(moda)
 
     def __str__(self):
         """
@@ -331,3 +356,29 @@ def plot_roc_curve(y_true, y_probs, positive_label):
     """
     # TODO
     return {"fpr": np.array(fpr), "tpr": np.array(tpr)}
+
+
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
