@@ -77,16 +77,11 @@ class knn:
         Returns:
             np.ndarray: Predicted class labels.
         """
-        # distancias = self.compute_distances(point=X)  # Distancias entre cada punto de X y del x_train 
-        # indices_vecinos = self.get_k_nearest_neighbors(distances=distancias) # indices de los k vecinos más cercanos a cada punto
-        # predicc = np.array([self.most_common_label(self.y_train[i][indices_vecinos[i]]) for i in range(len(indices_vecinos))])
-        # return predicc
-    
         predictions = []
         for point in X:
             distances = self.compute_distances(point)
-            neighbors = self.get_k_nearest_neighbors(distances)
-            labels = self.y_train[neighbors]
+            neighbors_indexes = self.get_k_nearest_neighbors(distances)
+            labels = self.y_train[neighbors_indexes]
             predictions.append(self.most_common_label(labels))
         return np.array(predictions)
 
@@ -103,7 +98,19 @@ class knn:
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        # TODO
+        # Vamos a devolver un np.array, que contenga distintos arrays (uno por punto), cada uno con la probabilidad de que su clase sea 0 y de que sea 1
+        tuplas_prob = []
+        for point in X:
+            distances = self.compute_distances(point)
+            neighbors_indexes = self.get_k_nearest_neighbors(distances)
+            neighbors = self.y_train[neighbors_indexes]
+            # Ahora contamos cuantos labels 0 ó 1 hay en los k vecinos más cercanos
+            clase_1 = sum(neighbors)  
+            clase_0 = len(neighbors) - clase_1  # asumimos que es una clasificación binaria y sólo hay 2 posibilidades de labels
+            tuplas_prob.append((clase_0/self.k, clase_1/self.k))  # añadimos a la lista, la tupla de probabilidades
+
+        return np.array(tuplas_prob)  # devolvemos la lista de arrays, donde cada array es dicha tupla de probabilidades
+
 
     def compute_distances(self, point: np.ndarray) -> np.ndarray:
         """Compute distance from a point to every point in the training dataset
@@ -116,6 +123,7 @@ class knn:
         """
         # Computamos la distancia entre cada uno de los puntos de x_train (metido en un np.array) con respecto al np.array de point
         return np.array([minkowski_distance(point,x) for x in self.x_train])
+    
 
     def get_k_nearest_neighbors(self, distances: np.ndarray) -> np.ndarray:
         """Get the k nearest neighbors indices given the distances matrix from a point.
@@ -253,22 +261,25 @@ def evaluate_classification_metrics(y_true, y_pred, positive_label):
     y_pred_mapped = np.array([1 if label == positive_label else 0 for label in y_pred])
 
     # Confusion Matrix
-    # TODO
+    tn = sum([1 if (y_true_mapped[i] == 0 and y_pred_mapped[i] == 0) else 0 for i in range(len(y_true_mapped))])
+    fp = sum([1 if (y_true_mapped[i] == 0 and y_pred_mapped[i] == 1) else 0 for i in range(len(y_true_mapped))])
+    fn = sum([1 if (y_true_mapped[i] == 1 and y_pred_mapped[i] == 0) else 0 for i in range(len(y_true_mapped))])
+    tp = sum([1 if (y_true_mapped[i] == 1 and y_pred_mapped[i] == 1) else 0 for i in range(len(y_true_mapped))])
 
     # Accuracy
-    # TODO
+    accuracy = (tn+tp)/(tn+tp+fp+fn) if (tp + tn + fp + fn) > 0 else 0
 
     # Precision
-    # TODO
+    precision = tp/(tp+fp) if (tp + fp) > 0 else 0
 
     # Recall (Sensitivity)
-    # TODO
+    recall = tp/(tp+fn) if (tp + fn) > 0 else 0
 
     # Specificity
-    # TODO
+    specificity = tn/(tn+fp) if (tn + fp) > 0 else 0
 
     # F1 Score
-    # TODO
+    f1= 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
     return {
         "Confusion Matrix": [tn, fp, fn, tp],
