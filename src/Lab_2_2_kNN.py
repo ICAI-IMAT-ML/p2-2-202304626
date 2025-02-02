@@ -77,10 +77,18 @@ class knn:
         Returns:
             np.ndarray: Predicted class labels.
         """
-        distancias = self.compute_distances(point=X)
-        indices_vecinos = self.get_k_nearest_neighbors(distances=distancias)
-        predicc = np.array([self.most_common_label(self.y_train[indices_vecinos])])
-        return predicc
+        # distancias = self.compute_distances(point=X)  # Distancias entre cada punto de X y del x_train 
+        # indices_vecinos = self.get_k_nearest_neighbors(distances=distancias) # indices de los k vecinos más cercanos a cada punto
+        # predicc = np.array([self.most_common_label(self.y_train[i][indices_vecinos[i]]) for i in range(len(indices_vecinos))])
+        # return predicc
+    
+        predictions = []
+        for point in X:
+            distances = self.compute_distances(point)
+            neighbors = self.get_k_nearest_neighbors(distances)
+            labels = self.y_train[neighbors]
+            predictions.append(self.most_common_label(labels))
+        return np.array(predictions)
 
     def predict_proba(self, X):
         """
@@ -122,8 +130,10 @@ class knn:
             You might want to check the np.argsort function.
         """
         # Utilizamos el método np.argsort, que devuelve los índices de la matriz (por filas), que la ordenaría en orden ascendente
-        return np.argsort(distances)[:self.k]  # A continuación, cogemos los k primeros índices de ese np.array de índices
-        # Al poner [:self.k] con numpy significa que se incluye el índice self.k, y además los índices de arrays comienzan en 1, no en cero
+        indices = np.argsort(distances)
+        # Al poner [:self.k] con numpy significa que se incluye el índice self.k
+        return indices[:self.k]
+
 
     def most_common_label(self, knn_labels: np.ndarray) -> int:
         """Obtain the most common label from the labels of the k nearest neighbors
@@ -134,7 +144,7 @@ class knn:
         Returns:
             int: most common label
         """
-        # La función mode de scipy.stats no devuelve la moda de un np.array, y también la frecuencia con la que se repite ese valor
+        # La función mode de scipy.stats nos devuelve la moda de un np.array, y también la frecuencia con la que se repite ese valor
         moda, frecuencia = mode(knn_labels)
 
         # Devolvemos solo el valor que representa la moda, como un entero
