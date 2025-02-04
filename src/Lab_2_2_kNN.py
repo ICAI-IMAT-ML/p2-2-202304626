@@ -375,7 +375,26 @@ def plot_roc_curve(y_true, y_probs, positive_label):
             - "tpr": Array of True Positive Rates for each threshold.
 
     """
-    # TODO
+    # Incializamos las listas vacías:
+    fpr = []
+    tpr = []
+
+    # Voy moviendo el threshold entre 0 y 1. En total 11 th distintos
+    ths = np.linspace(0,1,11)
+
+    for th in ths:  # Iteramos por todos los thresholds
+
+        # Las clases predecidas con probabilidad mayor que el th, se pasan como positivas, el resto como negativas
+        etiquetas_predecidas = [ positive_label if prob >= th else 0 for prob in y_probs ]  # asumimos que la negative_label es un cero ¿?
+
+        # Extraemos las métricas que nos interesan, para este th en concreto
+        dicc = evaluate_classification_metrics(y_true=y_true, y_pred=etiquetas_predecidas, positive_label=positive_label )
+
+        # Guardamos los valores de fpr y tpr en sus listas correspondientes
+        fpr.append(1-dicc["Specificity"])  # FPR = 1 - TNR = 1 - Specifity
+        tpr.append(dicc["Recall"])  # TPR = Sensitivity = Recall
+         
+    # Devolvemos las listas de distintos ratios
     return {"fpr": np.array(fpr), "tpr": np.array(tpr)}
 
 
