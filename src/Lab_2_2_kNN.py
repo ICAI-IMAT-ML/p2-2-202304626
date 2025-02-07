@@ -315,10 +315,28 @@ def plot_calibration_curve(y_true, y_probs, positive_label, n_bins=10):
             - "true_proportions": Array of the fraction of positives in each bin
 
     """
-    # TODO
+    y_true = np.array(y_true) == positive_label  # Convertimos a booleanos (True para positivos)
+
+    bins = np.linspace(0, 1, n_bins + 1)  # n_bins + 1 para tener un punto más
+    bin_centers = (bins[:-1] + bins[1:]) / 2  # Cogemos el punto medio de cada bin
+
+    proportions_reales = []
+
+    for i in range(n_bins):
+        indices = np.where((y_probs >= bins[i]) & (y_probs < bins[i+1]))[0]
+        
+        if len(indices) > 0:  # Evitamos bins vacíos
+            media_proportions = np.mean(y_true[indices])
+        else:
+            media_proportions = 0  # Si no hay datos en el bin, la proporción es 0
+
+        proportions_reales.append(media_proportions)
+
+    # Convertimos a array de numpy
+    true_proportions = np.array(proportions_reales)
+
+    # Devolvemos el diccionario
     return {"bin_centers": bin_centers, "true_proportions": true_proportions}
-
-
 
 def plot_probability_histograms(y_true, y_probs, positive_label, n_bins=10):
     """
@@ -345,10 +363,13 @@ def plot_probability_histograms(y_true, y_probs, positive_label, n_bins=10):
                 Array of predicted probabilities for the negative class.
 
     """
-    # TODO
+    # crear lista donde se vean quienes han sido clasificados con negative class (y con qué probabilidad) y lo mismo para positive class
 
+    # A un np.array se le pasa entre corchetes una condición y entonces se generan una serie de booleanos True o False según cada elemento del array cumpla o no la condición
+    # de esta manera, solo se cogen las probabilidades de y_prob ubicadas en los índices marcados con el booleano True
+    y_true_mapped = np.array([1 if label == positive_label else 0 for label in y_true])
     return {
-        "array_passed_to_histogram_of_positive_class": y_probs[y_true_mapped == 1],
+        "array_passed_to_histogram_of_positive_class": y_probs[y_true_mapped == 1],  
         "array_passed_to_histogram_of_negative_class": y_probs[y_true_mapped == 0],
     }
 
@@ -419,6 +440,4 @@ def plot_roc_curve(y_true, y_probs, positive_label):
 ###########
 ###########
 ###########
-###########
-###########
-###########
+#######
