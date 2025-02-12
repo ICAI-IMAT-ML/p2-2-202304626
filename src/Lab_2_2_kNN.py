@@ -368,6 +368,30 @@ def plot_probability_histograms(y_true, y_probs, positive_label, n_bins=10):
     # A un np.array se le pasa entre corchetes una condición y entonces se generan una serie de booleanos True o False según cada elemento del array cumpla o no la condición
     # de esta manera, solo se cogen las probabilidades de y_prob ubicadas en los índices marcados con el booleano True
     y_true_mapped = np.array([1 if label == positive_label else 0 for label in y_true])
+
+    # Gráfico
+    plt.figure(figsize=(7, 5))
+    plt.hist(
+        y_probs[y_true_mapped == 1],
+        bins=n_bins,
+        alpha=0.5,
+        color="red",
+        label="Positive class",
+    )
+    plt.hist(
+        y_probs[y_true_mapped == 0],
+        bins=n_bins,
+        alpha=0.5,
+        color="blue",
+        label="Negative class",
+    )
+    plt.xlabel("Predicted probability")
+    plt.ylabel("Count")
+    plt.title("Probability Distribution by Class")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
     return {
         "array_passed_to_histogram_of_positive_class": y_probs[y_true_mapped == 1],  
         "array_passed_to_histogram_of_negative_class": y_probs[y_true_mapped == 0],
@@ -414,6 +438,17 @@ def plot_roc_curve(y_true, y_probs, positive_label):
         # Guardamos los valores de fpr y tpr en sus listas correspondientes
         fpr.append(1-dicc["Specificity"])  # FPR = 1 - TNR = 1 - Specifity
         tpr.append(dicc["Recall"])  # TPR = Sensitivity = Recall
+
+    # Gráfico
+    plt.figure(figsize=(6, 6))
+    plt.plot(fpr, tpr, marker="o", linestyle="-", color="red", label="ROC Curve")
+    plt.plot([0, 1], [0, 1], linestyle="--", color="gray", label="Random Classifier")
+    plt.xlabel("False Positive Rate (FPR)")
+    plt.ylabel("True Positive Rate (TPR)")
+    plt.title("Receiver Operating Characteristic (ROC) Curve")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
          
     # Devolvemos las listas de distintos ratios
     return {"fpr": np.array(fpr), "tpr": np.array(tpr)}
